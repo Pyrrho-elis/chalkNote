@@ -1,8 +1,9 @@
 {
   "name": "chalknotes",
-  "version": "0.0.1",
+  "version": "0.0.22",
   "description": "A tool that simplifies blogs.",
   "main": "src/index.js",
+  "type": "module",
   "bin": {
     "chalknotes": "./bin/cli.js"
   },

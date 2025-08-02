@@ -1,11 +1,5 @@
-const { Client } = require('@notionhq/client');
-const dotenv = require('dotenv');
-dotenv.config();
-
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
-const dbId = process.env.NOTION_DATABASE_ID;
-
-console.log(process.env.NOTION_TOKEN)
+const { notion, dbId } = require('./notion');
+const { slugify } = require('../utils');
 
 const getPostBySlug = async (slug) => {
     try {
@@ -18,10 +12,6 @@ const getPostBySlug = async (slug) => {
                 }
             }
         })
-
-        const slugify = (title) =>
-            title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
 
         for (const page of response.results) {
             const titleProperty = page.properties["Name"];
@@ -69,8 +59,6 @@ const getPostBySlug = async (slug) => {
         throw new Error(`Error fetching posts from Notion: ${error.message}`);
     }
 }
-
-getPostBySlug("blog-posts")
 
 module.exports = {
     getPostBySlug
