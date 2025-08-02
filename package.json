@@ -1,0 +1,22 @@
+{
+  "name": "chalknotes",
+  "version": "0.0.1",
+  "description": "A tool that simplifies blogs.",
+  "main": "src/index.js",
+  "bin": {
+    "chalknotes": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "blog",
+    "notion"
+  ],
+  "author": "NepTune",
+  "license": "MIT",
+  "dependencies": {
+    "@notionhq/client": "^4.0.1",
+    "dotenv": "^17.2.1"
+  }
+}
