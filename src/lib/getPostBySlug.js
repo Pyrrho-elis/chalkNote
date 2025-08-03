@@ -53,36 +53,36 @@ const getPostBySlug = async (slug) => {
 function processBlock(block) {
     switch (block.type) {
         case "paragraph":
-            return processRichText(block.paragraph.rich_text, "p", "mb-6 leading-relaxed text-gray-700");
+            return processRichText(block.paragraph.rich_text, "p", "mb-6 leading-7 text-gray-700 text-lg");
             
         case "heading_1":
-            return processRichText(block.heading_1.rich_text, "h1", "text-3xl font-bold mb-6 mt-8 text-gray-900 border-b border-gray-200 pb-2");
+            return processRichText(block.heading_1.rich_text, "h1", "text-4xl font-bold mb-8 mt-12 text-gray-900 border-b-2 border-gray-200 pb-4");
             
         case "heading_2":
-            return processRichText(block.heading_2.rich_text, "h2", "text-2xl font-semibold mb-4 mt-6 text-gray-900");
+            return processRichText(block.heading_2.rich_text, "h2", "text-3xl font-semibold mb-6 mt-10 text-gray-900");
             
         case "heading_3":
-            return processRichText(block.heading_3.rich_text, "h3", "text-xl font-medium mb-3 mt-5 text-gray-900");
+            return processRichText(block.heading_3.rich_text, "h3", "text-2xl font-medium mb-4 mt-8 text-gray-900");
             
         case "bulleted_list_item":
-            return processRichText(block.bulleted_list_item.rich_text, "li", "mb-2 ml-4");
+            return processRichText(block.bulleted_list_item.rich_text, "li", "mb-3 ml-6 leading-7 text-gray-700");
             
         case "numbered_list_item":
-            return processRichText(block.numbered_list_item.rich_text, "li", "mb-2 ml-4");
+            return processRichText(block.numbered_list_item.rich_text, "li", "mb-3 ml-6 leading-7 text-gray-700");
             
         case "quote":
-            return processRichText(block.quote.rich_text, "blockquote", "border-l-4 border-blue-500 pl-6 italic text-gray-600 mb-6 bg-blue-50 py-4 rounded-r-lg");
+            return processRichText(block.quote.rich_text, "blockquote", "border-l-4 border-blue-500 pl-8 italic text-gray-600 mb-8 bg-blue-50 py-6 rounded-r-lg text-lg leading-7");
             
         case "code":
             const codeContent = block.code.rich_text.map(text => text.plain_text).join("");
             const language = block.code.language || 'text';
-            return `<pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6 text-sm"><code class="language-${language}">${escapeHtml(codeContent)}</code></pre>`;
+            return `<pre class="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto mb-8 text-sm leading-6 shadow-lg"><code class="language-${language}">${escapeHtml(codeContent)}</code></pre>`;
             
         case "image":
             return processImage(block.image);
             
         case "divider":
-            return '<hr class="my-8 border-gray-200" />';
+            return '<hr class="my-12 border-gray-300" />';
             
         case "callout":
             return processCallout(block.callout);
@@ -91,18 +91,18 @@ function processBlock(block) {
             return processToggle(block.toggle);
             
         case "table_of_contents":
-            return '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"><p class="text-blue-800 font-medium">📋 Table of Contents</p><p class="text-blue-600 text-sm">(Generated automatically)</p></div>';
+            return '<div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 shadow-sm"><p class="text-blue-800 font-medium text-lg">📋 Table of Contents</p><p class="text-blue-600 text-sm mt-1">(Generated automatically)</p></div>';
             
         case "bookmark":
             return processBookmark(block.bookmark);
             
         case "equation":
-            return `<div class="bg-gray-50 p-4 rounded-lg mb-6 text-center border border-gray-200"><p class="text-gray-600 mb-2">📐 Mathematical equation</p><p class="font-mono text-sm bg-white p-2 rounded border">${block.equation.expression}</p></div>`;
+            return `<div class="bg-gray-50 p-6 rounded-lg mb-8 text-center border border-gray-200 shadow-sm"><p class="text-gray-600 mb-3 font-medium">📐 Mathematical equation</p><p class="font-mono text-sm bg-white p-4 rounded border shadow-sm">${block.equation.expression}</p></div>`;
             
         default:
             // For unsupported blocks, try to extract plain text
             if (block[block.type]?.rich_text) {
-                return processRichText(block[block.type].rich_text, "p", "mb-4 text-gray-500 italic");
+                return processRichText(block[block.type].rich_text, "p", "mb-6 text-gray-500 italic text-lg");
             }
             return "";
     }
@@ -118,58 +118,55 @@ function processImage(image) {
     const caption = image.caption?.map(text => text.plain_text).join("") || "";
     const altText = caption || "Image";
     
-    // Get image size from Notion properties
-    let sizeClass = "w-full"; // Default full width
+    // Check for Notion's size property in the block itself
     let maxWidthClass = "max-w-full";
+    let alignmentClass = "text-center";
     
-    // Check if image has size information
-    if (image.width && image.height) {
-        // Calculate aspect ratio and apply appropriate sizing
-        const aspectRatio = image.width / image.height;
-        
-        if (aspectRatio > 2) {
-            // Wide images
-            sizeClass = "w-full";
-            maxWidthClass = "max-w-4xl";
-        } else if (aspectRatio < 0.5) {
-            // Tall images
-            sizeClass = "w-full";
-            maxWidthClass = "max-w-2xl";
-        } else {
-            // Square-ish images
-            sizeClass = "w-full";
-            maxWidthClass = "max-w-3xl";
-        }
-    }
-    
-    // Check for Notion's size property (if available)
+    // Try to get size from block properties (Notion API structure)
     if (image.size) {
         switch (image.size) {
             case 'small':
-                maxWidthClass = "max-w-md";
+                maxWidthClass = "max-w-sm";
                 break;
             case 'medium':
-                maxWidthClass = "max-w-2xl";
+                maxWidthClass = "max-w-lg";
                 break;
             case 'large':
-                maxWidthClass = "max-w-4xl";
+                maxWidthClass = "max-w-2xl";
                 break;
             default:
                 maxWidthClass = "max-w-full";
         }
     }
     
-    const responsiveClasses = `${sizeClass} ${maxWidthClass} h-auto rounded-lg shadow-sm`;
+    // Check for alignment in block properties
+    if (image.alignment) {
+        switch (image.alignment) {
+            case 'left':
+                alignmentClass = "text-left";
+                break;
+            case 'center':
+                alignmentClass = "text-center";
+                break;
+            case 'right':
+                alignmentClass = "text-right";
+                break;
+            default:
+                alignmentClass = "text-center";
+        }
+    }
+    
+    const responsiveClasses = `w-full ${maxWidthClass} h-auto rounded-lg shadow-sm`;
     
     return `
-        <figure class="my-6 text-center">
+        <figure class="my-8 ${alignmentClass}">
             <img 
                 src="${imageUrl}" 
                 alt="${escapeHtml(altText)}" 
                 class="${responsiveClasses}"
                 loading="lazy"
             />
-            ${caption ? `<figcaption class="text-center text-gray-500 mt-3 text-sm italic">${escapeHtml(caption)}</figcaption>` : ''}
+            ${caption ? `<figcaption class="text-gray-500 mt-3 text-sm italic">${escapeHtml(caption)}</figcaption>` : ''}
         </figure>
     `.trim();
 }
@@ -197,10 +194,10 @@ function processCallout(callout) {
     const colorClass = colorClasses[bgColor] || colorClasses.blue;
     
     return `
-        <div class="${colorClass} border-l-4 p-4 my-6 rounded-r-lg shadow-sm">
+        <div class="${colorClass} border-l-4 p-6 my-8 rounded-r-lg shadow-sm">
             <div class="flex items-start">
-                <span class="mr-3 text-xl flex-shrink-0">${icon}</span>
-                <div class="flex-1 leading-relaxed">${content}</div>
+                <span class="mr-4 text-2xl flex-shrink-0">${icon}</span>
+                <div class="flex-1 leading-7 text-lg">${content}</div>
             </div>
         </div>
     `.trim();
@@ -216,14 +213,14 @@ function processBookmark(bookmark) {
     const title = bookmark.caption?.[0]?.plain_text || "Bookmark";
     
     return `
-        <div class="my-6">
-            <a href="${url}" target="_blank" rel="noopener noreferrer" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all duration-200">
+        <div class="my-8">
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="block border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-lg transition-all duration-200 bg-white">
                 <div class="flex items-center">
                     <div class="flex-1 min-w-0">
-                        <p class="font-medium text-gray-900 truncate">${escapeHtml(title)}</p>
-                        <p class="text-sm text-gray-500 truncate">${url}</p>
+                        <p class="font-semibold text-gray-900 truncate text-lg">${escapeHtml(title)}</p>
+                        <p class="text-sm text-gray-500 truncate mt-1">${url}</p>
                     </div>
-                    <svg class="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 text-gray-400 ml-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                     </svg>
                 </div>
@@ -240,13 +237,13 @@ function processBookmark(bookmark) {
 function processToggle(toggle) {
     const content = processRichText(toggle.rich_text, "div", "");
     return `
-        <details class="my-4">
-            <summary class="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
+        <details class="my-6">
+            <summary class="cursor-pointer font-semibold text-gray-700 hover:text-gray-900 text-lg leading-7">
                 ${content}
             </summary>
-            <div class="mt-2 pl-4 border-l-2 border-gray-200">
+            <div class="mt-4 pl-6 border-l-2 border-gray-200">
                 <!-- Toggle content would go here if Notion API provided it -->
-                <p class="text-gray-600 text-sm">Toggle content not available in current API</p>
+                <p class="text-gray-600 text-base italic">Toggle content not available in current API</p>
             </div>
         </details>
     `.trim();
@@ -266,13 +263,13 @@ function processRichText(richText, tag, className) {
         let result = text.plain_text;
         
         // Apply annotations
-        if (text.annotations.bold) result = `<strong>${result}</strong>`;
-        if (text.annotations.italic) result = `<em>${result}</em>`;
-        if (text.annotations.strikethrough) result = `<del>${result}</del>`;
-        if (text.annotations.code) result = `<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">${result}</code>`;
+        if (text.annotations.bold) result = `<strong class="font-bold">${result}</strong>`;
+        if (text.annotations.italic) result = `<em class="italic">${result}</em>`;
+        if (text.annotations.strikethrough) result = `<del class="line-through">${result}</del>`;
+        if (text.annotations.code) result = `<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800">${result}</code>`;
         
         // Apply links
-        if (text.href) result = `<a href="${text.href}" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">${result}</a>`;
+        if (text.href) result = `<a href="${text.href}" class="text-blue-600 hover:text-blue-800 underline font-medium" target="_blank" rel="noopener noreferrer">${result}</a>`;
         
         return result;
     }).join("");
