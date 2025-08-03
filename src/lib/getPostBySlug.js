@@ -105,6 +105,23 @@ function convertBlockToStructuredJSON(block) {
         case "divider":
             return { ...base };
 
+        case "callout":
+            return { ...base };
+
+        case "toggle":
+            return { ...base };
+
+        case "table_of_contents":
+            return { ...base };
+        case "bookmark":
+            return { ...base };
+
+        case "equation":
+            return { ...base };
+
+        case "table":
+            return { ...base };
+
         default:
             return {
                 ...base,
