@@ -22,9 +22,9 @@ export const getStaticPaths = getStaticPathsForPosts;
 
 export default function BlogPost({ post }) {
   return (
-    <article>
-      <h1>{post.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+    <article className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+      <div className="text-lg text-gray-700" dangerouslySetInnerHTML={{ __html: post.content }} />
     </article>
   );
 }
@@ -44,9 +44,9 @@ export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
 
   return (
-    <article>
-      <h1>{post.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+    <article className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+      <div className="text-lg text-gray-700" dangerouslySetInnerHTML={{ __html: post.content }} />
     </article>
   );
 }
