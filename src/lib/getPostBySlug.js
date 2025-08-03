@@ -27,15 +27,15 @@ const getPostBySlug = async (slug) => {
                     block_id: page.id,
                 })
 
-                let content = ""
+                let content = []
                 for (const block of response.results) {
-                    content += processBlock(block)
+                    content.push(convertBlockToStructuredJSON(block))
                 }
 
                 return {
                     title,
                     slug: pageSlug,
-                    content: content,
+                    blocks: content,
                     notionPageId: page.id,
                 }
             }
@@ -47,6 +47,76 @@ const getPostBySlug = async (slug) => {
         throw new Error(`Error fetching posts from Notion: ${error.message}`)
     }
 }
+
+function convertBlockToStructuredJSON(block) {
+    const base = { type: block.type };
+
+    switch (block.type) {
+        case "paragraph":
+            return {
+                ...base,
+                text: extractPlainText(block.paragraph.rich_text),
+                richText: block.paragraph.rich_text,
+            };
+
+        case "heading_1":
+        case "heading_2":
+        case "heading_3":
+            return {
+                ...base,
+                text: extractPlainText(block[block.type].rich_text),
+                richText: block[block.type].rich_text,
+            };
+
+        case "bulleted_list_item":
+        case "numbered_list_item":
+            return {
+                ...base,
+                text: extractPlainText(block[block.type].rich_text),
+                richText: block[block.type].rich_text,
+            };
+
+        case "image": {
+            const image = block.image;
+            const url = image.type === "external" ? image.external.url : image.file.url;
+            const caption = extractPlainText(image.caption);
+            return {
+                ...base,
+                imageUrl: url,
+                caption,
+                alt: caption || "Blog image from Notion",
+            };
+        }
+
+        case "quote":
+            return {
+                ...base,
+                text: extractPlainText(block.quote.rich_text),
+                richText: block.quote.rich_text,
+            };
+
+        case "code":
+            return {
+                ...base,
+                code: extractPlainText(block.code.rich_text),
+                language: block.code.language || "text",
+            };
+
+        case "divider":
+            return { ...base };
+
+        default:
+            return {
+                ...base,
+                unsupported: true,
+            };
+    }
+}
+
+function extractPlainText(richText = []) {
+    return richText.map(t => t.plain_text).join("");
+}
+
 
 /**
  * Process individual Notion blocks and convert to HTML

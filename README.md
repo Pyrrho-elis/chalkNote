@@ -13,6 +13,8 @@
 - 🔧 Interactive configuration setup
 - 📁 Customizable route paths
 - 🧠 Minimal setup – just run `chalknotes`
+- 🖼️ **Rich content support** - Images, code blocks, lists, quotes, and more
+- 🔒 **Secure rendering** - React-based component instead of raw HTML
 
 ---
 
@@ -45,6 +47,7 @@ npm install chalknotes
    - Creates `blog.config.js` with default configuration (if needed)
    - Generates blog routes with clean, responsive templates
    - Supports light and dark themes
+   - **Renders rich Notion content** with images, code blocks, and more
 
 ---
 
@@ -97,7 +100,7 @@ Creates:
 
 ```js
 // pages/blog/[slug].js (or custom route)
-import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
+import { getStaticPropsForPost, getStaticPathsForPosts, NotionRenderer } from 'chalknotes';
 
 export const getStaticProps = getStaticPropsForPost;
 export const getStaticPaths = getStaticPathsForPosts;
@@ -110,10 +113,7 @@ export default function BlogPost({ post }) {
           <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
             {post.title}
           </h1>
-          <div 
-            className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-          />
+          <NotionRenderer blocks={post.blocks} />
         </article>
       </main>
     </div>
@@ -129,7 +129,7 @@ Creates:
 
 ```jsx
 // app/blog/[slug]/page.jsx (or custom route)
-import { getPostBySlug } from 'chalknotes';
+import { getPostBySlug, NotionRenderer } from 'chalknotes';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
@@ -141,10 +141,7 @@ export default async function BlogPost({ params }) {
           <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
             {post.title}
           </h1>
-          <div 
-            className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-          />
+          <NotionRenderer blocks={post.blocks} />
         </article>
       </main>
     </div>
@@ -157,10 +154,11 @@ export default async function BlogPost({ params }) {
 ## 🧩 API
 
 ### `getPostBySlug(slug: string)`
-Fetches a post and renders Notion blocks as HTML.
+Fetches a post and returns structured data for rendering.
 
 ```js
 const post = await getPostBySlug('my-post-title');
+// Returns: { title, slug, blocks, notionPageId }
 ```
 
 ---
@@ -191,6 +189,31 @@ For use with `getStaticPaths` in Page Router.
 
 ---
 
+### `NotionRenderer`
+React component for rendering Notion blocks:
+
+```jsx
+import { NotionRenderer } from 'chalknotes';
+
+<NotionRenderer blocks={post.blocks} />
+```
+
+---
+
+## 🖼️ Supported Content Types
+
+The `NotionRenderer` component supports all major Notion block types:
+
+- **Text blocks**: Paragraphs, headings (H1, H2, H3)
+- **Lists**: Bulleted and numbered lists
+- **Code blocks**: With syntax highlighting support
+- **Images**: With captions and Next.js optimization
+- **Quotes**: Styled blockquotes
+- **Dividers**: Horizontal rules
+- **Rich text**: Bold, italic, strikethrough, code, links
+
+---
+
 ## 🎨 Styling
 
 The generated templates use Tailwind CSS with:
@@ -199,6 +222,7 @@ The generated templates use Tailwind CSS with:
 - Typography optimized for readability
 - Proper spacing and hierarchy
 - Light and dark mode support
+- **Rich content styling** for all Notion block types
 
 Make sure you have Tailwind CSS installed in your project:
 
@@ -211,7 +235,7 @@ npm install -D tailwindcss @tailwindcss/typography
 ## 📅 Roadmap
 
 - [ ] Plugin system for custom components
-- [ ] More Notion block support (images, lists, code blocks)
+- [ ] More Notion block support (callouts, bookmarks, toggles)
 - [ ] RSS feed support
 - [ ] MDX or Markdown output option
 - [ ] Custom theme templates

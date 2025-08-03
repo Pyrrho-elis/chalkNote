@@ -90,7 +90,7 @@ function getTemplates(theme, routeBasePath) {
     if (theme === 'dark') {
         return {
             pageRouter: `
-import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
+import { getStaticPropsForPost, getStaticPathsForPosts, NotionRenderer } from 'chalknotes';
 
 export const getStaticProps = getStaticPropsForPost;
 export const getStaticPaths = getStaticPathsForPosts;
@@ -103,17 +103,14 @@ export default function BlogPost({ post }) {
           <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
             {post.title}
           </h1>
-          <div 
-            className="prose prose-lg prose-invert max-w-none text-gray-300 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-          />
+          <NotionRenderer blocks={post.blocks} />
         </article>
       </main>
     </div>
   );
 }`.trim(),
             appRouter: `
-import { getPostBySlug } from 'chalknotes';
+import { getPostBySlug, NotionRenderer } from 'chalknotes';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
@@ -125,10 +122,7 @@ export default async function BlogPost({ params }) {
           <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
             {post.title}
           </h1>
-          <div 
-            className="prose prose-lg prose-invert max-w-none text-gray-300 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-          />
+          <NotionRenderer blocks={post.blocks} />
         </article>
       </main>
     </div>
@@ -139,7 +133,7 @@ export default async function BlogPost({ params }) {
         // Default theme (light mode)
         return {
             pageRouter: `
-import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
+import { getStaticPropsForPost, getStaticPathsForPosts, NotionRenderer } from 'chalknotes';
 
 export const getStaticProps = getStaticPropsForPost;
 export const getStaticPaths = getStaticPathsForPosts;
@@ -152,17 +146,14 @@ export default function BlogPost({ post }) {
           <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
             {post.title}
           </h1>
-          <div 
-            className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-          />
+          <NotionRenderer blocks={post.blocks} />
         </article>
       </main>
     </div>
   );
 }`.trim(),
             appRouter: `
-import { getPostBySlug } from 'chalknotes';
+import { getPostBySlug, NotionRenderer } from 'chalknotes';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
@@ -174,10 +165,7 @@ export default async function BlogPost({ params }) {
           <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
             {post.title}
           </h1>
-          <div 
-            className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-          />
+          <NotionRenderer blocks={post.blocks} />
         </article>
       </main>
     </div>

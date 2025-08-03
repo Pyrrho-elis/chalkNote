@@ -6,5 +6,6 @@ module.exports = {
     getAllPosts,
     getPostBySlug,
     getStaticPropsForPost,
-    getStaticPathsForPosts
+    getStaticPathsForPosts,
+    NotionRenderer: require('./components/NotionRenderer').default
 }
