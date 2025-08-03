@@ -12,6 +12,9 @@ const getPostBySlug = async (slug) => {
                 }
             }
         })
+        if (response.results.length === 0) {
+            throw new Error("No posts found");
+        }
 
         for (const page of response.results) {
             const titleProperty = page.properties["Name"];

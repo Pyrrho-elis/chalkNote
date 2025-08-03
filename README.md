@@ -9,6 +9,9 @@
 - 📄 Fetch blog posts from Notion
 - 🪄 Auto-generate routes for App Router or Page Router
 - ⚙️ Helpers for `getStaticProps` / `getStaticPaths`
+- 🎨 Clean, responsive themes (light & dark mode)
+- 🔧 Interactive configuration setup
+- 📁 Customizable route paths
 - 🧠 Minimal setup – just run `chalknotes`
 
 ---
@@ -25,28 +28,64 @@ npm install chalknotes
 
 ## 🧙‍♂️ Quick Start
 
-```bash
-npx chalknotes
-```
+1. **Set up environment variables**
+   ```bash
+   # Create .env file
+   NOTION_TOKEN=secret_...
+   NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxx
+   ```
 
-- Automatically detects if you're using **App Router** or **Page Router**
-- Generates blog routes at `/blog/[slug]`
-- You’re done ✅
+2. **Run the CLI**
+   ```bash
+   npx chalknotes
+   ```
+
+3. **That's it!** ✅
+   - Automatically detects if you're using **App Router** or **Page Router**
+   - Creates `blog.config.js` with default configuration (if needed)
+   - Generates blog routes with clean, responsive templates
+   - Supports light and dark themes
 
 ---
 
-## 🔧 Setup
+## 🔧 Configuration
 
-Make sure your `.env` file contains:
+The CLI creates a `blog.config.js` file in your project root. Customize it to match your needs:
 
-```env
-NOTION_TOKEN=secret_...
-NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxx
+```javascript
+module.exports = {
+  // Notion Configuration
+  notionToken: process.env.NOTION_TOKEN,
+  notionDatabaseId: process.env.NOTION_DATABASE_ID,
+  
+  // Blog Configuration
+  routeBasePath: '/blog',  // Default: '/blog'
+  theme: 'default',        // Options: 'default' (light) or 'dark'
+  plugins: [],
+};
 ```
 
-Your Notion database should have:
-- A **"Name"** title property
-- A **"Published"** checkbox property
+### Configuration Options
+
+- **`routeBasePath`**: Customize your blog route (e.g., `/posts`, `/articles`)
+- **`theme`**: Choose between `'default'` (light mode) or `'dark'` (dark mode)
+- **`plugins`**: Array for future plugin support
+
+---
+
+## 🎨 Themes
+
+### Default Theme (Light Mode)
+- Clean white cards with subtle shadows
+- Light gray background
+- Dark text for optimal readability
+- Responsive design with Tailwind CSS
+
+### Dark Theme
+- Dark background with gray cards
+- White text with proper contrast
+- Inverted typography for dark mode
+- Same responsive layout
 
 ---
 
@@ -57,7 +96,7 @@ Your Notion database should have:
 Creates:
 
 ```js
-// pages/blog/[slug].js
+// pages/blog/[slug].js (or custom route)
 import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
 
 export const getStaticProps = getStaticPropsForPost;
@@ -65,10 +104,19 @@ export const getStaticPaths = getStaticPathsForPosts;
 
 export default function BlogPost({ post }) {
   return (
-    <article>
-      <h1>{post.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: post.content }} />
-    </article>
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <article className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
+            {post.title}
+          </h1>
+          <div 
+            className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: post.content }} 
+          />
+        </article>
+      </main>
+    </div>
   );
 }
 ```
@@ -80,17 +128,26 @@ export default function BlogPost({ post }) {
 Creates:
 
 ```jsx
-// app/blog/[slug]/page.jsx
+// app/blog/[slug]/page.jsx (or custom route)
 import { getPostBySlug } from 'chalknotes';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
 
   return (
-    <article>
-      <h1>{post.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: post.content }} />
-    </article>
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <article className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
+            {post.title}
+          </h1>
+          <div 
+            className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: post.content }} 
+          />
+        </article>
+      </main>
+    </div>
   );
 }
 ```
@@ -134,12 +191,32 @@ For use with `getStaticPaths` in Page Router.
 
 ---
 
+## 🎨 Styling
+
+The generated templates use Tailwind CSS with:
+- Clean, minimal design
+- Responsive layout
+- Typography optimized for readability
+- Proper spacing and hierarchy
+- Light and dark mode support
+
+Make sure you have Tailwind CSS installed in your project:
+
+```bash
+npm install -D tailwindcss @tailwindcss/typography
+```
+
+---
+
 ## 📅 Roadmap
 
-- [ ] Rich block support (images, lists, toggles, etc)
+- [ ] Plugin system for custom components
+- [ ] More Notion block support (images, lists, code blocks)
 - [ ] RSS feed support
 - [ ] MDX or Markdown output option
-- [ ] Custom blog.config.js support
+- [ ] Custom theme templates
+- [ ] Search functionality
+- [ ] Categories and tags support
 
 ---
 
