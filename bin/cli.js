@@ -196,75 +196,104 @@ export default function NotionRenderer({ blocks }) {
   if (!blocks || blocks.length === 0) return null;
 
   return (
-    <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed dark:prose-invert dark:text-slate-300">
+    <div className="prose prose-lg max-w-none prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-li:text-gray-700 dark:prose-li:text-gray-300">
       {blocks.map((block, i) => {
         switch (block.type) {
           case "heading_1":
-            return <h1 key={i}>{block.text}</h1>;
+            return (
+              <h1 key={i} className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 mt-8 first:mt-0 border-b border-gray-200 dark:border-gray-700 pb-2">
+                {block.text}
+              </h1>
+            );
 
           case "heading_2":
-            return <h2 key={i}>{block.text}</h2>;
+            return (
+              <h2 key={i} className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 mt-6 first:mt-0">
+                {block.text}
+              </h2>
+            );
 
           case "heading_3":
-            return <h3 key={i}>{block.text}</h3>;
+            return (
+              <h3 key={i} className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-3 mt-5 first:mt-0">
+                {block.text}
+              </h3>
+            );
 
           case "paragraph":
-            return <p key={i}>{block.text}</p>;
+            return (
+              <p key={i} className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4 last:mb-0">
+                {block.text}
+              </p>
+            );
 
           case "bulleted_list_item":
             return (
-              <ul key={i} className="list-disc ml-6">
-                <li>{block.text}</li>
-              </ul>
+              <div key={i} className="flex items-start mb-2">
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{block.text}</p>
+              </div>
             );
 
           case "numbered_list_item":
             return (
-              <ol key={i} className="list-decimal ml-6">
-                <li>{block.text}</li>
-              </ol>
+              <div key={i} className="flex items-start mb-2">
+                <span className="text-gray-500 dark:text-gray-400 font-medium mr-3 mt-0.5 flex-shrink-0">{(i + 1)}.</span>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{block.text}</p>
+              </div>
             );
 
           case "quote":
             return (
-              <blockquote key={i} className="border-l-4 pl-4 italic text-slate-600 bg-slate-50 p-4 rounded-r">
-                {block.text}
+              <blockquote key={i} className="border-l-4 border-blue-500 dark:border-blue-400 pl-6 py-4 my-6 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg shadow-sm">
+                <p className="text-gray-700 dark:text-gray-300 italic text-lg leading-relaxed">
+                  {block.text}
+                </p>
               </blockquote>
             );
 
           case "code":
             return (
-              <pre key={i} className="bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto text-sm">
-                <code className={\`language-\${block.language}\`}>{block.code}</code>
-              </pre>
+              <div key={i} className="my-6">
+                <pre className="bg-gray-900 dark:bg-gray-800 text-gray-100 p-4 rounded-lg shadow-md overflow-x-auto text-sm border border-gray-700 dark:border-gray-600">
+                  <code className={\`language-\${block.language}\`}>{block.code}</code>
+                </pre>
+              </div>
             );
 
           case "divider":
-            return <hr key={i} className="my-8 border-slate-300" />;
+            return (
+              <hr key={i} className="my-8 border-gray-200 dark:border-gray-700 shadow-sm" />
+            );
 
           case "image":
             return (
-              <figure key={i} className="max-w-[400px] mx-auto my-6 px-4">
-                <Image
-                  src={block.imageUrl}
-                  alt={block.alt || "Image"}
-                  width={400}
-                  height={300}
-                  className="rounded-xl object-contain"
-                />
-                {block.caption && (
-                  <figcaption className="text-sm text-center text-slate-500 mt-2 italic">
-                    {block.caption}
-                  </figcaption>
-                )}
+              <figure key={i} className="my-8">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                  <Image
+                    src={block.imageUrl}
+                    alt={block.alt || "Image"}
+                    width={400}
+                    height={300}
+                    className="rounded-lg object-contain w-full h-auto shadow-sm"
+                    unoptimized={true}
+                  />
+                  {block.caption && (
+                    <figcaption className="text-sm text-center text-gray-500 dark:text-gray-400 mt-3 italic">
+                      {block.caption}
+                    </figcaption>
+                  )}
+                </div>
               </figure>
             );
 
           default:
             return (
-              <p key={i} className="text-sm text-red-500 italic">
-                ⚠️ Unsupported block: {block.type}
-              </p>
+              <div key={i} className="my-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p className="text-sm text-yellow-700 dark:text-yellow-300 italic">
+                  ⚠️ Unsupported block type: {block.type}
+                </p>
+              </div>
             );
         }
       })}
@@ -286,6 +315,7 @@ export default function NotionRenderer({ blocks }) {
     const dirPath = path.dirname(slugDir);
 
     const templates = getTemplates(config.theme, config.routeBasePath);
+
     
     // Create NotionRenderer component in the same directory as the blog page
     const notionRendererContent = `import React from "react";
@@ -350,6 +380,7 @@ export default function NotionRenderer({ blocks }) {
                   width={400}
                   height={300}
                   className="rounded-xl object-contain"
+                  unoptimized={true}
                 />
                 {block.caption && (
                   <figcaption className="text-sm text-center text-slate-500 mt-2 italic">

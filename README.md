@@ -48,6 +48,7 @@ npm install chalknotes
    - Generates blog routes with clean, responsive templates
    - Supports light and dark themes
    - **Renders rich Notion content** with images, code blocks, and more
+   - **Configures `next.config.js`** for unoptimized images (works with any Notion domain)
 
 ---
 
