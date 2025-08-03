@@ -53,36 +53,36 @@ const getPostBySlug = async (slug) => {
 function processBlock(block) {
     switch (block.type) {
         case "paragraph":
-            return processRichText(block.paragraph.rich_text, "p", "mb-4");
+            return processRichText(block.paragraph.rich_text, "p", "mb-6 leading-relaxed text-gray-700");
             
         case "heading_1":
-            return processRichText(block.heading_1.rich_text, "h1", "text-3xl font-bold mb-6");
+            return processRichText(block.heading_1.rich_text, "h1", "text-3xl font-bold mb-6 mt-8 text-gray-900 border-b border-gray-200 pb-2");
             
         case "heading_2":
-            return processRichText(block.heading_2.rich_text, "h2", "text-2xl font-bold mb-5");
+            return processRichText(block.heading_2.rich_text, "h2", "text-2xl font-semibold mb-4 mt-6 text-gray-900");
             
         case "heading_3":
-            return processRichText(block.heading_3.rich_text, "h3", "text-xl font-bold mb-4");
+            return processRichText(block.heading_3.rich_text, "h3", "text-xl font-medium mb-3 mt-5 text-gray-900");
             
         case "bulleted_list_item":
-            return processRichText(block.bulleted_list_item.rich_text, "li", "mb-2");
+            return processRichText(block.bulleted_list_item.rich_text, "li", "mb-2 ml-4");
             
         case "numbered_list_item":
-            return processRichText(block.numbered_list_item.rich_text, "li", "mb-2");
+            return processRichText(block.numbered_list_item.rich_text, "li", "mb-2 ml-4");
             
         case "quote":
-            return processRichText(block.quote.rich_text, "blockquote", "border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-4");
+            return processRichText(block.quote.rich_text, "blockquote", "border-l-4 border-blue-500 pl-6 italic text-gray-600 mb-6 bg-blue-50 py-4 rounded-r-lg");
             
         case "code":
             const codeContent = block.code.rich_text.map(text => text.plain_text).join("");
             const language = block.code.language || 'text';
-            return `<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4"><code class="language-${language}">${escapeHtml(codeContent)}</code></pre>`;
+            return `<pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6 text-sm"><code class="language-${language}">${escapeHtml(codeContent)}</code></pre>`;
             
         case "image":
             return processImage(block.image);
             
         case "divider":
-            return '<hr class="my-8 border-gray-300" />';
+            return '<hr class="my-8 border-gray-200" />';
             
         case "callout":
             return processCallout(block.callout);
@@ -91,18 +91,18 @@ function processBlock(block) {
             return processToggle(block.toggle);
             
         case "table_of_contents":
-            return '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4"><p class="text-blue-800 font-medium">📋 Table of Contents</p><p class="text-blue-600 text-sm">(Generated automatically)</p></div>';
+            return '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"><p class="text-blue-800 font-medium">📋 Table of Contents</p><p class="text-blue-600 text-sm">(Generated automatically)</p></div>';
             
         case "bookmark":
             return processBookmark(block.bookmark);
             
         case "equation":
-            return `<div class="bg-gray-50 p-4 rounded-lg mb-4 text-center"><p class="text-gray-600">📐 Mathematical equation</p><p class="font-mono text-sm">${block.equation.expression}</p></div>`;
+            return `<div class="bg-gray-50 p-4 rounded-lg mb-6 text-center border border-gray-200"><p class="text-gray-600 mb-2">📐 Mathematical equation</p><p class="font-mono text-sm bg-white p-2 rounded border">${block.equation.expression}</p></div>`;
             
         default:
             // For unsupported blocks, try to extract plain text
             if (block[block.type]?.rich_text) {
-                return processRichText(block[block.type].rich_text, "p", "mb-4 text-gray-500");
+                return processRichText(block[block.type].rich_text, "p", "mb-4 text-gray-500 italic");
             }
             return "";
     }
@@ -118,23 +118,58 @@ function processImage(image) {
     const caption = image.caption?.map(text => text.plain_text).join("") || "";
     const altText = caption || "Image";
     
-    // Get image size and alignment from Notion properties
+    // Get image size from Notion properties
     let sizeClass = "w-full"; // Default full width
-    let alignmentClass = "text-center"; // Default center alignment
+    let maxWidthClass = "max-w-full";
     
-    // You can extend this based on Notion's image properties
-    // For now, we'll use responsive sizing
-    const responsiveClasses = "max-w-full h-auto rounded-lg shadow-sm";
+    // Check if image has size information
+    if (image.width && image.height) {
+        // Calculate aspect ratio and apply appropriate sizing
+        const aspectRatio = image.width / image.height;
+        
+        if (aspectRatio > 2) {
+            // Wide images
+            sizeClass = "w-full";
+            maxWidthClass = "max-w-4xl";
+        } else if (aspectRatio < 0.5) {
+            // Tall images
+            sizeClass = "w-full";
+            maxWidthClass = "max-w-2xl";
+        } else {
+            // Square-ish images
+            sizeClass = "w-full";
+            maxWidthClass = "max-w-3xl";
+        }
+    }
+    
+    // Check for Notion's size property (if available)
+    if (image.size) {
+        switch (image.size) {
+            case 'small':
+                maxWidthClass = "max-w-md";
+                break;
+            case 'medium':
+                maxWidthClass = "max-w-2xl";
+                break;
+            case 'large':
+                maxWidthClass = "max-w-4xl";
+                break;
+            default:
+                maxWidthClass = "max-w-full";
+        }
+    }
+    
+    const responsiveClasses = `${sizeClass} ${maxWidthClass} h-auto rounded-lg shadow-sm`;
     
     return `
-        <figure class="my-8 ${alignmentClass}">
+        <figure class="my-6 text-center">
             <img 
                 src="${imageUrl}" 
                 alt="${escapeHtml(altText)}" 
-                class="${sizeClass} ${responsiveClasses}"
+                class="${responsiveClasses}"
                 loading="lazy"
             />
-            ${caption ? `<figcaption class="text-center text-gray-600 mt-2 text-sm">${escapeHtml(caption)}</figcaption>` : ''}
+            ${caption ? `<figcaption class="text-center text-gray-500 mt-3 text-sm italic">${escapeHtml(caption)}</figcaption>` : ''}
         </figure>
     `.trim();
 }
@@ -162,11 +197,37 @@ function processCallout(callout) {
     const colorClass = colorClasses[bgColor] || colorClasses.blue;
     
     return `
-        <div class="${colorClass} border-l-4 p-4 my-4 rounded-r-lg">
+        <div class="${colorClass} border-l-4 p-4 my-6 rounded-r-lg shadow-sm">
             <div class="flex items-start">
-                <span class="mr-3 text-lg">${icon}</span>
-                <div class="flex-1">${content}</div>
+                <span class="mr-3 text-xl flex-shrink-0">${icon}</span>
+                <div class="flex-1 leading-relaxed">${content}</div>
             </div>
+        </div>
+    `.trim();
+}
+
+/**
+ * Process bookmark block
+ * @param {Object} bookmark - Notion bookmark block
+ * @returns {string} HTML string
+ */
+function processBookmark(bookmark) {
+    const url = bookmark.url;
+    const title = bookmark.caption?.[0]?.plain_text || "Bookmark";
+    
+    return `
+        <div class="my-6">
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all duration-200">
+                <div class="flex items-center">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-900 truncate">${escapeHtml(title)}</p>
+                        <p class="text-sm text-gray-500 truncate">${url}</p>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                </div>
+            </a>
         </div>
     `.trim();
 }
@@ -188,32 +249,6 @@ function processToggle(toggle) {
                 <p class="text-gray-600 text-sm">Toggle content not available in current API</p>
             </div>
         </details>
-    `.trim();
-}
-
-/**
- * Process bookmark block
- * @param {Object} bookmark - Notion bookmark block
- * @returns {string} HTML string
- */
-function processBookmark(bookmark) {
-    const url = bookmark.url;
-    const title = bookmark.caption?.[0]?.plain_text || "Bookmark";
-    
-    return `
-        <div class="my-4">
-            <a href="${url}" target="_blank" rel="noopener noreferrer" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                <div class="flex items-center">
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">${escapeHtml(title)}</p>
-                        <p class="text-sm text-gray-500 truncate">${url}</p>
-                    </div>
-                    <svg class="w-5 h-5 text-gray-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                    </svg>
-                </div>
-            </a>
-        </div>
     `.trim();
 }
 
