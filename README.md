@@ -100,7 +100,8 @@ Creates:
 
 ```js
 // pages/blog/[slug].js (or custom route)
-import { getStaticPropsForPost, getStaticPathsForPosts, NotionRenderer } from 'chalknotes';
+import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
+import NotionRenderer from './NotionRenderer';
 
 export const getStaticProps = getStaticPropsForPost;
 export const getStaticPaths = getStaticPathsForPosts;
@@ -129,7 +130,8 @@ Creates:
 
 ```jsx
 // app/blog/[slug]/page.jsx (or custom route)
-import { getPostBySlug, NotionRenderer } from 'chalknotes';
+import { getPostBySlug } from 'chalknotes';
+import NotionRenderer from './NotionRenderer';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
@@ -190,10 +192,10 @@ For use with `getStaticPaths` in Page Router.
 ---
 
 ### `NotionRenderer`
-React component for rendering Notion blocks:
+React component for rendering Notion blocks (scaffolded in your project):
 
 ```jsx
-import { NotionRenderer } from 'chalknotes';
+import NotionRenderer from './NotionRenderer';
 
 <NotionRenderer blocks={post.blocks} />
 ```

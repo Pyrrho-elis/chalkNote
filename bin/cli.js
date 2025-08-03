@@ -28,16 +28,16 @@ const configPath = path.join(process.cwd(), 'blog.config.js');
 if (!fs.existsSync(configPath)) {
     console.log("\n❌ blog.config.js not found");
     console.log("This file is required to configure your blog settings.");
-    
+
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
     });
-    
+
     rl.question("Would you like to create a default blog.config.js? (y/n): ", (answer) => {
         if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
             console.log("📝 Creating blog.config.js with default configuration...");
-            
+
             const configTemplate = `module.exports = {
   notionToken: process.env.NOTION_TOKEN,
   notionDatabaseId: process.env.NOTION_DATABASE_ID,
@@ -45,7 +45,7 @@ if (!fs.existsSync(configPath)) {
   theme: 'default',
   plugins: [],
 };`.trim();
-            
+
             fs.writeFileSync(configPath, configTemplate);
             console.log("✅ Created blog.config.js with default configuration");
             console.log("\n💡 Now you can re-run 'npx chalknotes' to scaffold your blog pages!");
@@ -86,11 +86,12 @@ const appRouter = path.join(process.cwd(), '/app')
 // Generate templates based on theme
 function getTemplates(theme, routeBasePath) {
     const routePath = routeBasePath.replace(/^\//, ''); // Remove leading slash
-    
+
     if (theme === 'dark') {
         return {
             pageRouter: `
-import { getStaticPropsForPost, getStaticPathsForPosts, NotionRenderer } from 'chalknotes';
+import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
+import NotionRenderer from './NotionRenderer';
 
 export const getStaticProps = getStaticPropsForPost;
 export const getStaticPaths = getStaticPathsForPosts;
@@ -110,7 +111,8 @@ export default function BlogPost({ post }) {
   );
 }`.trim(),
             appRouter: `
-import { getPostBySlug, NotionRenderer } from 'chalknotes';
+import { getPostBySlug } from 'chalknotes';
+import NotionRenderer from './NotionRenderer';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
@@ -133,7 +135,8 @@ export default async function BlogPost({ params }) {
         // Default theme (light mode)
         return {
             pageRouter: `
-import { getStaticPropsForPost, getStaticPathsForPosts, NotionRenderer } from 'chalknotes';
+import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
+import NotionRenderer from './NotionRenderer';
 
 export const getStaticProps = getStaticPropsForPost;
 export const getStaticPaths = getStaticPathsForPosts;
@@ -153,7 +156,8 @@ export default function BlogPost({ post }) {
   );
 }`.trim(),
             appRouter: `
-import { getPostBySlug, NotionRenderer } from 'chalknotes';
+import { getPostBySlug } from 'chalknotes';
+import NotionRenderer from './NotionRenderer';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
@@ -184,7 +188,94 @@ if (fs.existsSync(pageRouter)) {
 
     const templates = getTemplates(config.theme, config.routeBasePath);
     
+    // Create NotionRenderer component in the same directory as the blog page
+    const notionRendererContent = `import React from "react";
+import Image from "next/image";
+
+export default function NotionRenderer({ blocks }) {
+  if (!blocks || blocks.length === 0) return null;
+
+  return (
+    <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed dark:prose-invert dark:text-slate-300">
+      {blocks.map((block, i) => {
+        switch (block.type) {
+          case "heading_1":
+            return <h1 key={i}>{block.text}</h1>;
+
+          case "heading_2":
+            return <h2 key={i}>{block.text}</h2>;
+
+          case "heading_3":
+            return <h3 key={i}>{block.text}</h3>;
+
+          case "paragraph":
+            return <p key={i}>{block.text}</p>;
+
+          case "bulleted_list_item":
+            return (
+              <ul key={i} className="list-disc ml-6">
+                <li>{block.text}</li>
+              </ul>
+            );
+
+          case "numbered_list_item":
+            return (
+              <ol key={i} className="list-decimal ml-6">
+                <li>{block.text}</li>
+              </ol>
+            );
+
+          case "quote":
+            return (
+              <blockquote key={i} className="border-l-4 pl-4 italic text-slate-600 bg-slate-50 p-4 rounded-r">
+                {block.text}
+              </blockquote>
+            );
+
+          case "code":
+            return (
+              <pre key={i} className="bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto text-sm">
+                <code className={\`language-\${block.language}\`}>{block.code}</code>
+              </pre>
+            );
+
+          case "divider":
+            return <hr key={i} className="my-8 border-slate-300" />;
+
+          case "image":
+            return (
+              <figure key={i} className="max-w-[400px] mx-auto my-6 px-4">
+                <Image
+                  src={block.imageUrl}
+                  alt={block.alt || "Image"}
+                  width={400}
+                  height={300}
+                  className="rounded-xl object-contain"
+                />
+                {block.caption && (
+                  <figcaption className="text-sm text-center text-slate-500 mt-2 italic">
+                    {block.caption}
+                  </figcaption>
+                )}
+              </figure>
+            );
+
+          default:
+            return (
+              <p key={i} className="text-sm text-red-500 italic">
+                ⚠️ Unsupported block: {block.type}
+              </p>
+            );
+        }
+      })}
+    </div>
+  );
+}`;
+    
     fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'NotionRenderer.jsx'), notionRendererContent);
+    console.log(`✅ Created ${routePath}/NotionRenderer.jsx`);
+    
     fs.writeFileSync(slugDir, templates.pageRouter);
     console.log(`✅ Created pages/${routePath}/[slug].js`);
     
@@ -196,7 +287,94 @@ if (fs.existsSync(pageRouter)) {
 
     const templates = getTemplates(config.theme, config.routeBasePath);
     
+    // Create NotionRenderer component in the same directory as the blog page
+    const notionRendererContent = `import React from "react";
+import Image from "next/image";
+
+export default function NotionRenderer({ blocks }) {
+  if (!blocks || blocks.length === 0) return null;
+
+  return (
+    <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed dark:prose-invert dark:text-slate-300">
+      {blocks.map((block, i) => {
+        switch (block.type) {
+          case "heading_1":
+            return <h1 key={i}>{block.text}</h1>;
+
+          case "heading_2":
+            return <h2 key={i}>{block.text}</h2>;
+
+          case "heading_3":
+            return <h3 key={i}>{block.text}</h3>;
+
+          case "paragraph":
+            return <p key={i}>{block.text}</p>;
+
+          case "bulleted_list_item":
+            return (
+              <ul key={i} className="list-disc ml-6">
+                <li>{block.text}</li>
+              </ul>
+            );
+
+          case "numbered_list_item":
+            return (
+              <ol key={i} className="list-decimal ml-6">
+                <li>{block.text}</li>
+              </ol>
+            );
+
+          case "quote":
+            return (
+              <blockquote key={i} className="border-l-4 pl-4 italic text-slate-600 bg-slate-50 p-4 rounded-r">
+                {block.text}
+              </blockquote>
+            );
+
+          case "code":
+            return (
+              <pre key={i} className="bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto text-sm">
+                <code className={\`language-\${block.language}\`}>{block.code}</code>
+              </pre>
+            );
+
+          case "divider":
+            return <hr key={i} className="my-8 border-slate-300" />;
+
+          case "image":
+            return (
+              <figure key={i} className="max-w-[400px] mx-auto my-6 px-4">
+                <Image
+                  src={block.imageUrl}
+                  alt={block.alt || "Image"}
+                  width={400}
+                  height={300}
+                  className="rounded-xl object-contain"
+                />
+                {block.caption && (
+                  <figcaption className="text-sm text-center text-slate-500 mt-2 italic">
+                    {block.caption}
+                  </figcaption>
+                )}
+              </figure>
+            );
+
+          default:
+            return (
+              <p key={i} className="text-sm text-red-500 italic">
+                ⚠️ Unsupported block: {block.type}
+              </p>
+            );
+        }
+      })}
+    </div>
+  );
+}`;
+    
     fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'NotionRenderer.jsx'), notionRendererContent);
+    console.log(`✅ Created ${routePath}/[slug]/NotionRenderer.jsx`);
+    
     fs.writeFileSync(slugDir, templates.appRouter);
     console.log(`✅ Created app/${routePath}/[slug]/page.jsx`);
     
