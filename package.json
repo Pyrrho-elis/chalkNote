@@ -1,6 +1,6 @@
 {
   "name": "chalknotes",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "A tool that simplifies blogs.",
   "main": "src/index.js",
   "bin": {
