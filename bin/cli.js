@@ -87,9 +87,9 @@ const appRouter = path.join(process.cwd(), '/app')
 function getTemplates(theme, routeBasePath) {
   const routePath = routeBasePath.replace(/^\//, ''); // Remove leading slash
 
-  if (theme === 'dark') {
-    return {
-      pageRouter: `
+  // Both themes now use responsive dark mode
+  return {
+    pageRouter: `
 import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
 import NotionRenderer from './NotionRenderer';
 
@@ -98,10 +98,10 @@ export const getStaticPaths = getStaticPathsForPosts;
 
 export default function BlogPost({ post }) {
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-8">
-          <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
+        <article className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
             {post.title}
           </h1>
           <NotionRenderer blocks={post.blocks} />
@@ -110,7 +110,7 @@ export default function BlogPost({ post }) {
     </div>
   );
 }`.trim(),
-      appRouter: `
+    appRouter: `
 import { getPostBySlug } from 'chalknotes';
 import NotionRenderer from './NotionRenderer';
 
@@ -118,10 +118,10 @@ export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-8">
-          <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
+        <article className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
             {post.title}
           </h1>
           <NotionRenderer blocks={post.blocks} />
@@ -130,53 +130,7 @@ export default async function BlogPost({ params }) {
     </div>
   );
 }`.trim()
-    };
-  } else {
-    // Default theme (light mode)
-    return {
-      pageRouter: `
-import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
-import NotionRenderer from './NotionRenderer';
-
-export const getStaticProps = getStaticPropsForPost;
-export const getStaticPaths = getStaticPathsForPosts;
-
-export default function BlogPost({ post }) {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            {post.title}
-          </h1>
-          <NotionRenderer blocks={post.blocks} />
-        </article>
-      </main>
-    </div>
-  );
-}`.trim(),
-      appRouter: `
-import { getPostBySlug } from 'chalknotes';
-import NotionRenderer from './NotionRenderer';
-
-export default async function BlogPost({ params }) {
-  const post = await getPostBySlug(params.slug);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            {post.title}
-          </h1>
-          <NotionRenderer blocks={post.blocks} />
-        </article>
-      </main>
-    </div>
-  );
-}`.trim()
-    };
-  }
+  };
 }
 
 // NotionRenderer component template
