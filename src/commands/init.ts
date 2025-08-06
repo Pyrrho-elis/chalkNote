@@ -67,7 +67,7 @@ export async function init(options: InitOptions = {}): Promise<void> {
     Logger.info('4. Start your development server to see your blog');
     
     Logger.section('Built-in plugins available:');
-    Logger.info('Use @@CommentSection, @@TableOfContents, @@Share, @@ReadingTime in your Notion content');
+    Logger.info('Use {{CommentSection}}, {{TableOfContents}}, {{Share}}, {{ReadingTime}} in your Notion content');
 
   } catch (error) {
     Logger.error(`Initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

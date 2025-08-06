@@ -6,7 +6,7 @@ export function generateNotionRenderer(vars: TemplateVariables): string {
 
 function generateAppRouterRenderer(vars: TemplateVariables): string {
   const imageImport = 'import Image from "next/image";';
-  
+
   if (vars.hasTailwind) {
     return `${vars.hasTypeScript ? 'import React from "react";' : ''}
 ${imageImport}
@@ -100,14 +100,15 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
 
           case "image":
             return (
-              <figure key={i} className="my-8">
-                <div className="relative overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <figure key={i} className="flex flex-col justify-center items-center my-8">
+                <div className="relative w-fit overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                   <Image
                     src={block.imageUrl || '/placeholder.jpg'}
                     alt={block.alt || 'Image'}
                     width={800}
                     height={400}
                     className="w-full h-auto object-cover"
+                    unoptimized
                   />
                   {block.caption && (
                     <figcaption className="text-sm text-center text-gray-500 dark:text-gray-400 mt-3 italic">
