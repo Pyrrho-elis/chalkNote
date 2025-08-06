@@ -8,7 +8,9 @@ function generateAppRouterRenderer(vars: TemplateVariables): string {
   const imageImport = 'import Image from "next/image";';
 
   if (vars.hasTailwind) {
-    return `${vars.hasTypeScript ? 'import React from "react";' : 'import React from "react";'}
+    return `"use client";
+
+${vars.hasTypeScript ? 'import React from "react";' : 'import React from "react";'}
 ${imageImport}
 
 interface NotionBlock {
@@ -21,6 +23,13 @@ interface NotionBlock {
   code?: string;
   language?: string;
   unsupported?: boolean;
+  // Table properties
+  tableWidth?: number;
+  hasColumnHeader?: boolean;
+  hasRowHeader?: boolean;
+  rows?: {
+    cells: string[][];
+  }[];
 }
 
 interface NotionRendererProps {
@@ -75,19 +84,19 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
 
           case "paragraph":
             return (
-              <p key={i} className="leading-relaxed mb-4 text-gray-700 dark:text-gray-300">
-                {block.text && (block.text.includes('tweet-embed') || block.text.includes('youtube-embed')) ? (
+              <div key={i} className="leading-relaxed mb-4 text-gray-700 dark:text-gray-300">
+                {block.text && (block.text.includes('tweet-embed') || block.text.includes('youtube-embed') || block.text.includes('reading-time') || block.text.includes('table-of-contents') || block.text.includes('share-section') || block.text.includes('comment-section') || block.text.includes('image-gallery')) ? (
                   isClient ? (
-                    <span className="flex w-full justify-center" dangerouslySetInnerHTML={{ __html: block.text }} />
+                    <div className="flex w-full justify-center" dangerouslySetInnerHTML={{ __html: block.text }} />
                   ) : (
-                    <div className="embed-placeholder">Loading embed...</div>
+                    <div className="embed-placeholder">Loading content...</div>
                   )
                 ) : block.text && block.text.includes('<') ? (
                   <span dangerouslySetInnerHTML={{ __html: block.text }} />
                 ) : (
-                  block.text
+                  <p>{block.text}</p>
                 )}
-              </p>
+              </div>
             );
 
           case "bulleted_list_item":
@@ -183,7 +192,9 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
 
   // CSS Modules version
   if (vars.cssFramework === 'css-modules') {
-    return `${vars.hasTypeScript ? 'import React from "react";' : ''}
+    return `"use client";
+
+${vars.hasTypeScript ? 'import React from "react";' : 'import React from "react";'}
 ${imageImport}
 import styles from './NotionRenderer.module.css';
 
@@ -197,6 +208,13 @@ interface NotionBlock {
   code?: string;
   language?: string;
   unsupported?: boolean;
+  // Table properties
+  tableWidth?: number;
+  hasColumnHeader?: boolean;
+  hasRowHeader?: boolean;
+  rows?: {
+    cells: string[][];
+  }[];
 }
 
 interface NotionRendererProps {
@@ -204,6 +222,24 @@ interface NotionRendererProps {
 }
 
 export default function NotionRenderer({ blocks }: NotionRendererProps) {
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+    
+    // Load Twitter widgets script if tweet embeds exist
+    if (
+      typeof window !== 'undefined' &&
+      !(window as typeof window & { twttr?: any }).twttr
+    ) {
+      const script = document.createElement('script');
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.async = true;
+      script.charset = 'utf-8';
+      document.head.appendChild(script);
+    }
+  }, []);
+
   if (!blocks || blocks.length === 0) return null;
 
   return (
@@ -233,9 +269,19 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
 
           case "paragraph":
             return (
-              <p key={i} className={styles.paragraph}>
-                {block.text}
-              </p>
+              <div key={i} className={styles.paragraph}>
+                {block.text && (block.text.includes('tweet-embed') || block.text.includes('youtube-embed') || block.text.includes('reading-time') || block.text.includes('table-of-contents') || block.text.includes('share-section') || block.text.includes('comment-section') || block.text.includes('image-gallery')) ? (
+                  isClient ? (
+                    <div className={styles.pluginContent} dangerouslySetInnerHTML={{ __html: block.text }} />
+                  ) : (
+                    <div className={styles.embedPlaceholder}>Loading content...</div>
+                  )
+                ) : block.text && block.text.includes('<') ? (
+                  <span dangerouslySetInnerHTML={{ __html: block.text }} />
+                ) : (
+                  <p>{block.text}</p>
+                )}
+              </div>
             );
 
           case "quote":
@@ -254,6 +300,25 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
                   {block.code}
                 </code>
               </pre>
+            );
+
+          case "table":
+            return (
+              <div key={i} className={styles.tableContainer}>
+                <table className={styles.table}>
+                  <tbody>
+                    {block.rows?.map((row, rowIndex) => (
+                      <tr key={rowIndex} className={rowIndex === 0 && block.hasColumnHeader ? styles.tableHeader : ""}>
+                        {row.cells.map((cell, cellIndex) => (
+                          <td key={cellIndex} className={styles.tableCell}>
+                            {cell.join(' ')}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             );
 
           case "image":
@@ -292,7 +357,9 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
   }
 
   // Plain CSS/Styled Components version
-  return `${vars.hasTypeScript ? 'import React from "react";' : ''}
+  return `"use client";
+
+${vars.hasTypeScript ? 'import React from "react";' : 'import React from "react";'}
 ${imageImport}
 
 interface NotionBlock {
@@ -305,6 +372,13 @@ interface NotionBlock {
   code?: string;
   language?: string;
   unsupported?: boolean;
+  // Table properties
+  tableWidth?: number;
+  hasColumnHeader?: boolean;
+  hasRowHeader?: boolean;
+  rows?: {
+    cells: string[][];
+  }[];
 }
 
 interface NotionRendererProps {
@@ -312,6 +386,24 @@ interface NotionRendererProps {
 }
 
 export default function NotionRenderer({ blocks }: NotionRendererProps) {
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+    
+    // Load Twitter widgets script if tweet embeds exist
+    if (
+      typeof window !== 'undefined' &&
+      !(window as typeof window & { twttr?: any }).twttr
+    ) {
+      const script = document.createElement('script');
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.async = true;
+      script.charset = 'utf-8';
+      document.head.appendChild(script);
+    }
+  }, []);
+
   if (!blocks || blocks.length === 0) return null;
 
   return (
@@ -358,13 +450,23 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
 
           case "paragraph":
             return (
-              <p key={i} style={{ 
+              <div key={i} style={{ 
                 lineHeight: '1.625', 
                 marginBottom: '1rem', 
                 color: '#374151' 
               }}>
-                {block.text}
-              </p>
+                {block.text && (block.text.includes('tweet-embed') || block.text.includes('youtube-embed') || block.text.includes('reading-time') || block.text.includes('table-of-contents') || block.text.includes('share-section') || block.text.includes('comment-section') || block.text.includes('image-gallery')) ? (
+                  isClient ? (
+                    <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }} dangerouslySetInnerHTML={{ __html: block.text }} />
+                  ) : (
+                    <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280' }}>Loading content...</div>
+                  )
+                ) : block.text && block.text.includes('<') ? (
+                  <span dangerouslySetInnerHTML={{ __html: block.text }} />
+                ) : (
+                  <p>{block.text}</p>
+                )}
+              </div>
             );
 
           case "quote":
@@ -409,6 +511,37 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
                   {block.code}
                 </code>
               </pre>
+            );
+
+          case "table":
+            return (
+              <div key={i} style={{ overflowX: 'auto', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                <table style={{ 
+                  minWidth: '100%', 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: '0.5rem',
+                  borderCollapse: 'collapse'
+                }}>
+                  <tbody>
+                    {block.rows?.map((row, rowIndex) => (
+                      <tr key={rowIndex} style={rowIndex === 0 && block.hasColumnHeader ? { 
+                        backgroundColor: '#f9fafb', 
+                        fontWeight: '600' 
+                      } : {}}>
+                        {row.cells.map((cell, cellIndex) => (
+                          <td key={cellIndex} style={{ 
+                            border: '1px solid #d1d5db', 
+                            padding: '0.5rem 1rem', 
+                            fontSize: '0.875rem' 
+                          }}>
+                            {cell.join(' ')}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             );
 
           case "image":
