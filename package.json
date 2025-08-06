@@ -1,6 +1,6 @@
 {
   "name": "chalknotes",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Transform your Notion pages into beautiful developer blogs with intelligent framework detection and plugin architecture",
   "main": "dist/index.js",
   "bin": {

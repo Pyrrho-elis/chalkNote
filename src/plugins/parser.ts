@@ -69,7 +69,11 @@ export const builtInPlugins: Plugin[] = [
     syntax: /\{\{Tweet\[([^\]]+)\]\}\}/g,
     render: (match, context) => {
       const tweetId = match[1];
-      return `<blockquote class="twitter-tweet"><a href="https://twitter.com/twitter/status/${tweetId}"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>`;
+      return `<div class="tweet-embed" data-tweet-id="${tweetId}">
+        <blockquote class="twitter-tweet">
+          <a href="https://twitter.com/twitter/status/${tweetId}"></a>
+        </blockquote>
+      </div>`;
     }
   },
 

@@ -8,7 +8,7 @@ function generateAppRouterRenderer(vars: TemplateVariables): string {
   const imageImport = 'import Image from "next/image";';
 
   if (vars.hasTailwind) {
-    return `${vars.hasTypeScript ? 'import React from "react";' : ''}
+    return `${vars.hasTypeScript ? 'import React from "react";' : 'import React from "react";'}
 ${imageImport}
 
 interface NotionBlock {
@@ -28,6 +28,21 @@ interface NotionRendererProps {
 }
 
 export default function NotionRenderer({ blocks }: NotionRendererProps) {
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+    
+    // Load Twitter widgets script if tweet embeds exist
+    if (typeof window !== 'undefined' && !window.twttr) {
+      const script = document.createElement('script');
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.async = true;
+      script.charset = 'utf-8';
+      document.head.appendChild(script);
+    }
+  }, []);
+
   if (!blocks || blocks.length === 0) return null;
 
   return (
@@ -58,7 +73,11 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
           case "paragraph":
             return (
               <p key={i} className="leading-relaxed mb-4 text-gray-700 dark:text-gray-300">
-                {block.text}
+                {block.text && block.text.includes('<') ? (
+                  <span dangerouslySetInnerHTML={{ __html: block.text }} />
+                ) : (
+                  block.text
+                )}
               </p>
             );
 
