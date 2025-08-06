@@ -1,22 +1,59 @@
 {
   "name": "chalknotes",
-  "version": "0.0.34",
-  "description": "A tool that simplifies blogs.",
-  "main": "src/index.js",
+  "version": "1.0.0",
+  "description": "Transform your Notion pages into beautiful developer blogs with intelligent framework detection and plugin architecture",
+  "main": "dist/index.js",
   "bin": {
-    "chalknotes": "./bin/cli.js"
+    "chalknotes": "./bin/chalknotes.js"
   },
+  "files": [
+    "dist",
+    "bin",
+    "templates",
+    "README.md"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
+    "notion",
     "blog",
-    "notion"
+    "nextjs",
+    "developer",
+    "cli",
+    "markdown",
+    "cms"
   ],
-  "author": "NepTune",
+  "author": "ChalkNotes Team",
   "license": "MIT",
   "dependencies": {
     "@notionhq/client": "^4.0.1",
-    "dotenv": "^17.2.1"
-  }
+    "chalk": "^4.1.2",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.5",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "inquirer": "^8.2.6",
+    "ora": "^5.4.1",
+    "picocolors": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^8.2.10",
+    "@types/node": "^20.11.17",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chalknotes/chalknotes"
+  },
+  "bugs": {
+    "url": "https://github.com/chalknotes/chalknotes/issues"
+  },
+  "homepage": "https://chalknotes.dev"
 }

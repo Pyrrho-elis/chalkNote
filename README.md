@@ -1,258 +1,213 @@
-# ✏️ ChalkNotes
+# ChalkNotes
 
-**Turn your Notion database into a blog with zero config. Works with Next.js Page Router and App Router.**
+Transform your Notion pages into beautiful developer blogs with intelligent framework detection and plugin architecture.
 
----
+## ✨ Features
 
-## 🚀 Features
+- 🚀 **Zero Configuration** - Intelligent detection of Next.js setup, CSS frameworks, and project structure
+- 🎨 **Smart Theming** - Multiple themes with automatic CSS framework detection (Tailwind, Styled Components, CSS Modules)
+- 🧩 **Plugin Architecture** - Extensible plugin system with inline syntax parsing (`@@PluginName`)
+- 📱 **Responsive Design** - Mobile-first approach with dark mode support
+- ⚡ **Performance Optimized** - Built-in caching, error boundaries, and retry mechanisms
+- 🔧 **TypeScript Support** - Full TypeScript integration with comprehensive type definitions
+- 📦 **Framework Agnostic** - Works with both App Router and Pages Router in Next.js
 
-- 📄 Fetch blog posts from Notion
-- 🪄 Auto-generate routes for App Router or Page Router
-- ⚙️ Helpers for `getStaticProps` / `getStaticPaths`
-- 🎨 Clean, responsive themes (light & dark mode)
-- 🔧 Interactive configuration setup
-- 📁 Customizable route paths
-- 🧠 Minimal setup – just run `chalknotes`
-- 🖼️ **Rich content support** - Images, code blocks, lists, quotes, and more
-- 🔒 **Secure rendering** - React-based component instead of raw HTML
+## 🚀 Quick Start
 
----
-
-## 📦 Installation
+### 1. Installation
 
 ```bash
-pnpm add chalknotes
-# or
 npm install chalknotes
+# or
+yarn add chalknotes
+# or
+pnpm add chalknotes
 ```
 
----
+### 2. Environment Setup
 
-## 🧙‍♂️ Quick Start
+Create a `.env` file in your project root:
 
-1. **Set up environment variables**
-   ```bash
-   # Create .env file
-   NOTION_TOKEN=secret_...
-   NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxx
-   ```
+```env
+NOTION_TOKEN=secret_...
+NOTION_DATABASE_ID=...
+```
 
-2. **Run the CLI**
-   ```bash
-   npx chalknotes
-   ```
+### 3. Initialize ChalkNotes
 
-3. **That's it!** ✅
-   - Automatically detects if you're using **App Router** or **Page Router**
-   - Creates `blog.config.js` with default configuration (if needed)
-   - Generates blog routes with clean, responsive templates
-   - Supports light and dark themes
-   - **Renders rich Notion content** with images, code blocks, and more
-   - **Configures `next.config.js`** for unoptimized images (works with any Notion domain)
+```bash
+npx chalknotes init
+```
 
----
+This will:
+- Detect your Next.js setup (App Router vs Pages Router)
+- Identify your CSS framework (Tailwind, Styled Components, etc.)
+- Create a `blog.config.js` with intelligent defaults
+- Set up environment variables
+
+### 4. Scaffold Your Blog
+
+```bash
+npx chalknotes scaffold
+```
+
+This generates:
+- Blog pages optimized for your framework
+- NotionRenderer component with your CSS framework
+- Proper TypeScript definitions (if detected)
+
+### 5. Start Blogging
+
+Visit `/blog` in your Next.js app to see your Notion content transformed into a beautiful blog!
 
 ## 🔧 Configuration
 
-The CLI creates a `blog.config.js` file in your project root. Customize it to match your needs:
+The `blog.config.js` file provides extensive customization options:
 
 ```javascript
 module.exports = {
-  // Notion Configuration
   notionToken: process.env.NOTION_TOKEN,
   notionDatabaseId: process.env.NOTION_DATABASE_ID,
-  
-  // Blog Configuration
-  routeBasePath: '/blog',  // Default: '/blog'
-  theme: 'default',        // Options: 'default' (light) or 'dark'
-  plugins: [],
+  routeBasePath: '/blog',
+  theme: 'modern', // 'modern' | 'minimal' | 'dev'
+  plugins: [
+    '@chalknotes/syntax-highlighter',
+    '@chalknotes/analytics',
+    '@chalknotes/seo'
+  ],
+  caching: {
+    enabled: true,
+    ttl: 3600
+  },
+  errorBoundaries: true,
+  customization: {
+    colors: {
+      primary: '#3b82f6',
+      accent: '#8b5cf6'
+    }
+  }
 };
 ```
 
-### Configuration Options
+## 🧩 Plugin System
 
-- **`routeBasePath`**: Customize your blog route (e.g., `/posts`, `/articles`)
-- **`theme`**: Choose between `'default'` (light mode) or `'dark'` (dark mode)
-- **`plugins`**: Array for future plugin support
+ChalkNotes features a powerful plugin architecture with inline syntax parsing. Simply add plugin syntax anywhere in your Notion content:
 
----
+### Built-in Plugins
+
+```markdown
+@@CommentSection - Add a comment section
+@@TableOfContents - Generate table of contents
+@@ReadingTime - Show estimated reading time
+@@Share[twitter,linkedin] - Add share buttons
+@@CodePen[pen-id] - Embed CodePen
+@@YouTube[video-id] - Embed YouTube videos
+```
+
+### Custom Plugins
+
+Create custom plugins by registering them in your blog:
+
+```javascript
+import { registerPlugin } from 'chalknotes';
+
+registerPlugin({
+  name: 'CustomWidget',
+  syntax: /@@CustomWidget\[([^\]]+)\]/g,
+  render: (match, context) => {
+    const config = match[1];
+    return `<div class="custom-widget">${config}</div>`;
+  }
+});
+```
 
 ## 🎨 Themes
 
-### Default Theme (Light Mode)
-- Clean white cards with subtle shadows
-- Light gray background
-- Dark text for optimal readability
-- Responsive design with Tailwind CSS
+### Modern (Default)
+Clean, contemporary design with excellent readability and modern styling.
 
-### Dark Theme
-- Dark background with gray cards
-- White text with proper contrast
-- Inverted typography for dark mode
-- Same responsive layout
+### Minimal
+Simple, focused layout that puts content first with minimal distractions.
 
----
+### Dev
+Developer-focused theme with enhanced code highlighting and terminal-like aesthetics.
 
-## 📚 Usage in Next.js
+## 📚 API Reference
 
-### Page Router
+### Core Functions
 
-Creates:
+```typescript
+import { getAllPosts, getPostBySlug } from 'chalknotes';
 
-```js
-// pages/blog/[slug].js (or custom route)
+// Get all published posts
+const posts = await getAllPosts();
+
+// Get specific post by slug
+const post = await getPostBySlug('my-post-slug');
+```
+
+### Next.js Helpers
+
+```typescript
+// For Pages Router
 import { getStaticPropsForPost, getStaticPathsForPosts } from 'chalknotes';
-import NotionRenderer from './NotionRenderer';
 
 export const getStaticProps = getStaticPropsForPost;
 export const getStaticPaths = getStaticPathsForPosts;
 
-export default function BlogPost({ post }) {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            {post.title}
-          </h1>
-          <NotionRenderer blocks={post.blocks} />
-        </article>
-      </main>
-    </div>
-  );
-}
-```
-
----
-
-### App Router
-
-Creates:
-
-```jsx
-// app/blog/[slug]/page.jsx (or custom route)
+// For App Router
 import { getPostBySlug } from 'chalknotes';
-import NotionRenderer from './NotionRenderer';
 
 export default async function BlogPost({ params }) {
   const post = await getPostBySlug(params.slug);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            {post.title}
-          </h1>
-          <NotionRenderer blocks={post.blocks} />
-        </article>
-      </main>
-    </div>
-  );
+  return <YourBlogComponent post={post} />;
 }
 ```
 
----
+## 🛠 Advanced Usage
 
-## 🧩 API
+### Custom CSS Framework Integration
 
-### `getPostBySlug(slug: string)`
-Fetches a post and returns structured data for rendering.
+ChalkNotes automatically detects your CSS framework and generates appropriate styles:
 
-```js
-const post = await getPostBySlug('my-post-title');
-// Returns: { title, slug, blocks, notionPageId }
+- **Tailwind CSS**: Uses utility classes with dark mode support
+- **Styled Components**: Generates styled-components with theme integration
+- **CSS Modules**: Creates modular CSS with scoped styles
+- **Plain CSS**: Falls back to inline styles for maximum compatibility
+
+### Error Handling & Caching
+
+Built-in error boundaries and intelligent caching ensure your blog stays online even when the Notion API is unavailable:
+
+```javascript
+// Automatic retry with exponential backoff
+// Intelligent caching with configurable TTL
+// Graceful degradation when API fails
 ```
 
----
+### TypeScript Support
 
-### `getAllPosts()`
-Returns all published posts with metadata:
+Full TypeScript integration with comprehensive type definitions:
 
-```js
-[
-  {
-    title: "My First Post",
-    slug: "my-first-post",
-    notionPageId: "xxxxxxxx"
-  },
-  ...
-]
+```typescript
+import type { BlogPost, NotionBlock, ChalkNotesConfig } from 'chalknotes';
 ```
 
----
+## 🤝 Contributing
 
-### `getStaticPropsForPost()`
-For use with `getStaticProps` in Page Router.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
----
+## 📄 License
 
-### `getStaticPathsForPosts()`
-For use with `getStaticPaths` in Page Router.
+MIT - see [LICENSE](LICENSE) file for details.
 
----
+## 🔗 Links
 
-### `NotionRenderer`
-React component for rendering Notion blocks (scaffolded in your project):
-
-```jsx
-import NotionRenderer from './NotionRenderer';
-
-<NotionRenderer blocks={post.blocks} />
-```
+- [Documentation](https://chalknotes.dev/docs)
+- [Examples](https://chalknotes.dev/examples)
+- [Plugin Gallery](https://chalknotes.dev/plugins)
+- [GitHub](https://github.com/chalknotes/chalknotes)
 
 ---
 
-## 🖼️ Supported Content Types
-
-The `NotionRenderer` component supports all major Notion block types:
-
-- **Text blocks**: Paragraphs, headings (H1, H2, H3)
-- **Lists**: Bulleted and numbered lists
-- **Code blocks**: With syntax highlighting support
-- **Images**: With captions and Next.js optimization
-- **Quotes**: Styled blockquotes
-- **Dividers**: Horizontal rules
-- **Rich text**: Bold, italic, strikethrough, code, links
-
----
-
-## 🎨 Styling
-
-The generated templates use Tailwind CSS with:
-- Clean, minimal design
-- Responsive layout
-- Typography optimized for readability
-- Proper spacing and hierarchy
-- Light and dark mode support
-- **Rich content styling** for all Notion block types
-
-Make sure you have Tailwind CSS installed in your project:
-
-```bash
-npm install -D tailwindcss @tailwindcss/typography
-```
-
----
-
-## 📅 Roadmap
-
-- [ ] Plugin system for custom components
-- [ ] More Notion block support (callouts, bookmarks, toggles)
-- [ ] RSS feed support
-- [ ] MDX or Markdown output option
-- [ ] Custom theme templates
-- [ ] Search functionality
-- [ ] Categories and tags support
-
----
-
-## 💡 Inspiration
-
-Built to scratch an itch while exploring the simplicity of tools like [feather.so](https://feather.so/) and [Notion Blog](https://github.com/ijjk/notion-blog).
-
----
-
-## 🧑‍💻 Author
-
-[NepTune](https://github.com/yourhandle) • MIT License
+Made with ❤️ for the developer community
