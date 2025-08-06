@@ -34,7 +34,10 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
     setIsClient(true);
     
     // Load Twitter widgets script if tweet embeds exist
-    if (typeof window !== 'undefined' && !window.twttr) {
+    if (
+      typeof window !== 'undefined' &&
+      !(window as typeof window & { twttr?: any }).twttr
+    ) {
       const script = document.createElement('script');
       script.src = 'https://platform.twitter.com/widgets.js';
       script.async = true;
@@ -73,7 +76,13 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
           case "paragraph":
             return (
               <p key={i} className="leading-relaxed mb-4 text-gray-700 dark:text-gray-300">
-                {block.text && block.text.includes('<') ? (
+                {block.text && (block.text.includes('tweet-embed') || block.text.includes('youtube-embed')) ? (
+                  isClient ? (
+                    <span className="flex w-full justify-center" dangerouslySetInnerHTML={{ __html: block.text }} />
+                  ) : (
+                    <div className="embed-placeholder">Loading embed...</div>
+                  )
+                ) : block.text && block.text.includes('<') ? (
                   <span dangerouslySetInnerHTML={{ __html: block.text }} />
                 ) : (
                   block.text
@@ -115,6 +124,25 @@ export default function NotionRenderer({ blocks }: NotionRendererProps) {
                   {block.code}
                 </code>
               </pre>
+            );
+
+          case "table":
+            return (
+              <div key={i} className="overflow-x-auto my-6">
+                <table className="min-w-full border border-gray-300 dark:border-gray-600 rounded-lg">
+                  <tbody>
+                    {block.rows?.map((row, rowIndex) => (
+                      <tr key={rowIndex} className={rowIndex === 0 && block.hasColumnHeader ? "bg-gray-50 dark:bg-gray-800 font-semibold" : ""}>
+                        {row.cells.map((cell, cellIndex) => (
+                          <td key={cellIndex} className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm">
+                            {cell.join(' ')}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             );
 
           case "image":

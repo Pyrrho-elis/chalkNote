@@ -91,18 +91,18 @@ module.exports = {
 
 ## 🧩 Plugin System
 
-ChalkNotes features a powerful plugin architecture with inline syntax parsing. Simply add plugin syntax anywhere in your Notion content using the `{{PluginName[params]}}` format:
+ChalkNotes features a powerful plugin architecture with inline syntax parsing. Simply add plugin syntax anywhere in your Notion content using the `%%PluginName[params]` format:
 
 ### Built-in Plugins
 
 ```markdown
-{{CommentSection}} - Add a comment section
-{{TableOfContents}} - Generate table of contents
-{{ReadingTime}} - Show estimated reading time
-{{Share[twitter,linkedin]}} - Add share buttons
-{{CodePen[pen-id]}} - Embed CodePen
-{{Tweet[tweet-id]}} - Embed Twitter tweets
-{{YouTube[video-id]}} - Embed YouTube videos
+%%CommentSection - Add a comment section
+%%TableOfContents - Generate table of contents
+%%ReadingTime - Show estimated reading time
+%%Share[twitter,linkedin] - Add share buttons
+%%CodePen[pen-id] - Embed CodePen
+%%Tweet[tweet-id] - Embed Twitter tweets
+%%YouTube[video-id] - Embed YouTube videos
 ```
 
 ### Custom Plugins
@@ -114,7 +114,7 @@ import { registerPlugin } from 'chalknotes';
 
 registerPlugin({
   name: 'CustomWidget',
-  syntax: /\{\{CustomWidget\[([^\]]+)\]\}\}/g,
+  syntax: /%%CustomWidget\[([^\]]+)\]/g,
   render: (match, context) => {
     const config = match[1];
     return `<div class="custom-widget">${config}</div>`;

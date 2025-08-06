@@ -106,7 +106,7 @@ export class NotionClient {
       const blocks: NotionBlock[] = [];
 
       for (const block of response.results) {
-        const convertedBlock = this.convertBlockToStructuredJSON(block);
+        const convertedBlock = await this.convertBlockToStructuredJSON(block);
         if (convertedBlock) {
           blocks.push(convertedBlock);
         }
@@ -118,7 +118,31 @@ export class NotionClient {
     }
   }
 
-  private convertBlockToStructuredJSON(block: any): NotionBlock | null {
+  private async getTableRows(tableId: string): Promise<any[]> {
+    try {
+      const response = await this.client.blocks.children.list({
+        block_id: tableId,
+        page_size: 100
+      });
+
+      const rows = [];
+      for (const row of response.results) {
+        if ((row as any).type === 'table_row') {
+          const cells = (row as any).table_row.cells.map((cell: any[]) => 
+            cell.map((text: any) => text.plain_text)
+          );
+          rows.push({ cells });
+        }
+      }
+
+      return rows;
+    } catch (error) {
+      console.warn(`Failed to fetch table rows for ${tableId}:`, error);
+      return [];
+    }
+  }
+
+  private async convertBlockToStructuredJSON(block: any): Promise<NotionBlock | null> {
     const base = { type: block.type };
 
     try {
@@ -186,8 +210,25 @@ export class NotionClient {
         case 'table_of_contents':
         case 'bookmark':
         case 'equation':
-        case 'table':
           return { ...base };
+          
+        case 'table': {
+          const table = block.table;
+          const tableWidth = table.table_width;
+          const hasColumnHeader = table.has_column_header;
+          const hasRowHeader = table.has_row_header;
+          
+          // Get table rows
+          const rows = await this.getTableRows(block.id);
+          
+          return {
+            ...base,
+            tableWidth,
+            hasColumnHeader,
+            hasRowHeader,
+            rows
+          };
+        }
 
         default:
           return {

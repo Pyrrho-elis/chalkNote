@@ -10,8 +10,8 @@ export class PluginParser {
   parseContent(content: string, context: PluginContext): string {
     let parsedContent = content;
 
-    // Find all plugin syntax in the content - using {{PluginName[params]}} syntax
-    const pluginRegex = /\{\{(\w+)(?:\[([^\]]*)\])?\}\}/g;
+    // Find all plugin syntax in the content - using %%PluginName[params] syntax
+    const pluginRegex = /%%(\w+)(?:\[([^\]]*)\])?/g;
     let match;
 
     while ((match = pluginRegex.exec(content)) !== null) {
@@ -57,7 +57,7 @@ export class PluginParser {
 export const builtInPlugins: Plugin[] = [
   {
     name: 'CodePen',
-    syntax: /\{\{CodePen\[([^\]]+)\]\}\}/g,
+    syntax: /%%CodePen\[([^\]]+)\]/g,
     render: (match, context) => {
       const penId = match[1];
       return `<iframe height="300" style="width: 100%;" scrolling="no" title="CodePen Embed" src="https://codepen.io/embed/${penId}?height=300&theme-id=dark&default-tab=result" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true"></iframe>`;
@@ -66,7 +66,7 @@ export const builtInPlugins: Plugin[] = [
   
   {
     name: 'Tweet',
-    syntax: /\{\{Tweet\[([^\]]+)\]\}\}/g,
+    syntax: /%%Tweet\[([^\]]+)\]/g,
     render: (match, context) => {
       const tweetId = match[1];
       return `<div class="tweet-embed" data-tweet-id="${tweetId}">
@@ -79,16 +79,16 @@ export const builtInPlugins: Plugin[] = [
 
   {
     name: 'YouTube',
-    syntax: /\{\{YouTube\[([^\]]+)\]\}\}/g,
+    syntax: /%%YouTube\[([^\]]+)\]/g,
     render: (match, context) => {
       const videoId = match[1];
-      return `<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe></div>`;
+      return `<div class="youtube-embed" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe></div>`;
     }
   },
 
   {
     name: 'Gallery',
-    syntax: /\{\{Gallery\[([^\]]+)\]\}\}/g,
+    syntax: /%%Gallery\[([^\]]+)\]/g,
     render: (match, context) => {
       const folder = match[1];
       // This would need to be implemented based on your image storage solution
@@ -101,7 +101,7 @@ export const builtInPlugins: Plugin[] = [
 
   {
     name: 'CommentSection',
-    syntax: /\{\{CommentSection(?:\[([^\]]*)\])?\}\}/g,
+    syntax: /%%CommentSection(?:\[([^\]]*)\])?/g,
     render: (match, context) => {
       const config = match[1] || '';
       return `<div class="comment-section" data-config="${config}">
@@ -116,7 +116,7 @@ export const builtInPlugins: Plugin[] = [
 
   {
     name: 'TableOfContents',
-    syntax: /\{\{TableOfContents(?:\[([^\]]*)\])?\}\}/g,
+    syntax: /%%TableOfContents(?:\[([^\]]*)\])?/g,
     render: (match, context) => {
       // Generate TOC from post headings
       const headings = context.post.blocks
@@ -148,7 +148,7 @@ export const builtInPlugins: Plugin[] = [
 
   {
     name: 'ReadingTime',
-    syntax: /\{\{ReadingTime(?:\[([^\]]*)\])?\}\}/g,
+    syntax: /%%ReadingTime(?:\[([^\]]*)\])?/g,
     render: (match, context) => {
       const wordsPerMinute = 200;
       const textContent = context.post.blocks
@@ -168,7 +168,7 @@ export const builtInPlugins: Plugin[] = [
 
   {
     name: 'Share',
-    syntax: /\{\{Share(?:\[([^\]]*)\])?\}\}/g,
+    syntax: /%%Share(?:\[([^\]]*)\])?/g,
     render: (match, context) => {
       const platforms = match[1] ? match[1].split(',') : ['twitter', 'linkedin', 'facebook'];
       const title = encodeURIComponent(context.post.title);

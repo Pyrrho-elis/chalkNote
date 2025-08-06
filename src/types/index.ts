@@ -35,6 +35,15 @@ export interface NotionBlock {
   code?: string;
   language?: string;
   unsupported?: boolean;
+  // Table properties
+  tableWidth?: number;
+  hasColumnHeader?: boolean;
+  hasRowHeader?: boolean;
+  rows?: TableRow[];
+}
+
+export interface TableRow {
+  cells: string[][];
 }
 
 export interface BlogPost {
